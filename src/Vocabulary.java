@@ -4,13 +4,15 @@ import java.util.ArrayList;
 public class Vocabulary {
 
 
-    public String[] voc;
+    public String[] vocab;
     private int init_capacity;
     private int num;
     private int numTotal;
     private double vocabSize;
     private ArrayList<Double> fileSizes;
-    private ArrayList<String> fileNames; // Added to store file names
+    private ArrayList<String> fileNames;
+
+    private String vocabPath;
 
     //constructor
     public Vocabulary(String folder){
@@ -18,14 +20,12 @@ public class Vocabulary {
         File[] files = dir.listFiles();
 
         init_capacity = files.length;
-        num=0;
-        numTotal=0;
-        vocabSize=0;
         fileSizes = new ArrayList<>();
-        fileNames = new ArrayList<>(); // Initialize fileNames ArrayList
-        voc = new String[init_capacity];
+        fileNames = new ArrayList<>();
+        vocab = new String[init_capacity];
 
         for (File file : files) {
+
             if(file.isFile()) {
                 fileSizes.add(file.length()/1024.0);
                 fileNames.add(file.getName()); // Store the file name
@@ -36,9 +36,9 @@ public class Vocabulary {
                     br = new BufferedReader(new FileReader(file));
                     while ((line = br.readLine()) != null) {
                         addWords(line);
-
                     }
-                }catch(IOException e) {
+
+                } catch(IOException e) {
                     System.out.println(e);
                 }
                 finally {
@@ -61,13 +61,14 @@ public class Vocabulary {
             e.printStackTrace();
         }
         vocabSize = new File("vocabulary.txt").length()/1024.0;
+        vocabPath = new File("vocabulary.txt").getAbsolutePath();
     }
 
-    //checks words and adds them to an array
+    //checks words in a line and adds them to an array
     private void addWords(String line){
         if(line.equals("")) return;
         String[] temp = line.split("[\\W]+");
-        for(int i=0;i<temp.length;i++){
+        for(int i = 0; i<temp.length; i++){
             if(temp[i].matches("[a-zA-Z0-9_]+")) {
                 numTotal++;
                 addWord(temp[i].toLowerCase());
@@ -75,17 +76,8 @@ public class Vocabulary {
         }
     }
 
-    //adds words to an array
-    private void addWord(String word){
-        int idx = index(word);
-        if(idx < length() && word.equals(voc[idx])) return;
-        shift(idx);
-        voc[idx]=word;
-        num++;
-    }
-
     public int length(){
-        return voc.length;
+        return vocab.length;
     }
 
     public int number(){
@@ -101,16 +93,16 @@ public class Vocabulary {
         if(num>=length()-1) {
             String[] res = new String[length() * 2];
             for (int i = 0; i < idx; i++) {
-                res[i] = voc[i];
+                res[i] = vocab[i];
             }
             for(int i=num; i>=idx; i--){
-                res[i+1] = voc[i];
+                res[i+1] = vocab[i];
             }
-            voc = res;
+            vocab = res;
         }
         else{
             for(int i=num; i>=idx; i--){
-                voc[i+1] = voc[i];
+                vocab[i+1] = vocab[i];
             }
         }
 
@@ -120,13 +112,23 @@ public class Vocabulary {
         return binarySearch(0, num -1, word);
     }
 
-    //look for a place to put a word in
+    //adds words to an array
+    private void addWord(String word){
+        int idx = index(word);
+        if(idx < length() && word.equals(vocab[idx])) return;
+        shift(idx);
+        vocab[idx]=word;
+        num++;
+    }
+
+
+    //search for a place to put a word in
     private int binarySearch(int first, int last, String word) {
         int res;
         if (first > last) res = first;
         else {
             int mid = first + (last - first) / 2;
-            String midWord = voc[mid];
+            String midWord = vocab[mid];
             if (word.equals(midWord)) res = mid;
             else if (word.compareTo(midWord) < 0){
                 res = binarySearch(first, mid - 1, word);}
@@ -155,13 +157,13 @@ public class Vocabulary {
         return s;
     }
 
-    //returns elements of an array
+    //returns elements of a created vocab
     public void print (){
         OutputStream out = new BufferedOutputStream( System.out );
         String res="";
         for(int i=0;i<num;i++){
             try {
-                out.write((voc[i]+"\n").getBytes());
+                out.write((vocab[i]+"\n").getBytes());
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -173,11 +175,17 @@ public class Vocabulary {
         }
     }
 
-    //returns elements of an array
+
+    //returns the path to the vocabulary.txt file on disc
+    public String getVocabularyFilePath() {
+        File file = new File("vocabulary.txt");
+        return file.getAbsolutePath();
+    }
+
     public String toString(){
-        String res="";
-        for(int i=0;i<num;i++){
-            res+= voc[i]+"\n";
+        String res = "";
+        for(int i = 0; i < num; i++){
+            res += vocab[i] + "\n";
         }
         return res;
     }
