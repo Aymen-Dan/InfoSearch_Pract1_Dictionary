@@ -30,7 +30,7 @@ public class Main {
                 default:
                     System.out.println("Wrong format");
             }
-            System.out.println("\n1 - Show vocabulary;\n2 - Show stats;\n3 - Show time needed to form vocabulary\n0 -" +
+            System.out.println("\n1 - Show vocabulary;\n2 - Show stats;\n3 - Show time needed to form vocabulary\n0 - " +
                     "Exit\n");
             i = in.nextInt();
         }

@@ -3,12 +3,14 @@ import java.util.ArrayList;
 
 public class Vocabulary {
 
+
     public String[] voc;
     private int init_capacity;
     private int num;
     private int numTotal;
     private double vocabSize;
     private ArrayList<Double> fileSizes;
+    private ArrayList<String> fileNames; // Added to store file names
 
     //constructor
     public Vocabulary(String folder){
@@ -20,11 +22,13 @@ public class Vocabulary {
         numTotal=0;
         vocabSize=0;
         fileSizes = new ArrayList<>();
+        fileNames = new ArrayList<>(); // Initialize fileNames ArrayList
         voc = new String[init_capacity];
 
         for (File file : files) {
             if(file.isFile()) {
                 fileSizes.add(file.length()/1024.0);
+                fileNames.add(file.getName()); // Store the file name
                 BufferedReader br = null;
                 String line;
                 try {
@@ -135,19 +139,20 @@ public class Vocabulary {
     public String Stats(){
         String s = "Size of a collection: ";
         double size=0;
-        for(int i=0;i<fileSizes.size();i++){
-            size+=fileSizes.get(i);
-            s+="\nFile "+(i+1)+": "+fileSizes.get(i)+" kb";
+
+        for(int i=0; i<fileSizes.size(); i++){
+            size += fileSizes.get(i);
+            s += "\nFile " + (i+1) + ": " + fileNames.get(i) + " - " + fileSizes.get(i) + " kb";
         }
-        s+="\nTotal: "+size+" kb";
 
-        s+="\nNumber of words in a collection: "+ numTotal;
+        s += "\n\nTotal: " + size + " kb";
 
-        s+="\nVocabulary size: "+vocabSize+" kb";
+        s += "\nNumber of words in a collection: " + numTotal;
 
-        s+="\nNumber of words in a vocabulary: "+num;
+        s += "\nVocabulary size: " + vocabSize + " kb";
+
+        s += "\nNumber of words in a vocabulary: " + num;
         return s;
-
     }
 
     //returns elements of an array
