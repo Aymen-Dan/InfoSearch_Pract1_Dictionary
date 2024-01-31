@@ -1,25 +1,24 @@
 import java.io.*;
 import java.util.ArrayList;
 
-public class Vocabulary {
-
+public class Vocabulary implements Serializable {
 
     public String[] vocab;
-    private int init_capacity;
     private int num;
     private int numTotal;
-    private double vocabSize;
-    private ArrayList<Double> fileSizes;
-    private ArrayList<String> fileNames;
+    final double vocabSize;
+    private final ArrayList<Double> fileSizes;
+    private final ArrayList<String> fileNames;
+    private String vocabPathTXT;
 
-    private String vocabPath;
 
     //constructor
     public Vocabulary(String folder){
         File dir = new File(folder);
         File[] files = dir.listFiles();
 
-        init_capacity = files.length;
+        assert files != null;
+        int init_capacity = files.length;
         fileSizes = new ArrayList<>();
         fileNames = new ArrayList<>();
         vocab = new String[init_capacity];
@@ -61,7 +60,7 @@ public class Vocabulary {
             e.printStackTrace();
         }
         vocabSize = new File("vocabulary.txt").length()/1024.0;
-        vocabPath = new File("vocabulary.txt").getAbsolutePath();
+        vocabPathTXT = new File("vocabulary.txt").getAbsolutePath();
     }
 
     //checks words in a line and adds them to an array
@@ -84,25 +83,23 @@ public class Vocabulary {
         return num;
     }
 
-    public int numberTotal(){
-        return numTotal;
-    }
+
 
     //make room for a word in an array
     private void shift(int idx){
-        if(num>=length()-1) {
+        if(num >= length() - 1) {
             String[] res = new String[length() * 2];
-            for (int i = 0; i < idx; i++) {
-                res[i] = vocab[i];
+            if (idx >= 0) {
+                System.arraycopy(vocab, 0, res, 0, idx);
             }
-            for(int i=num; i>=idx; i--){
-                res[i+1] = vocab[i];
+            if (num + 1 - idx >= 0){
+                System.arraycopy(vocab, idx, res, idx + 1, num + 1 - idx);
             }
             vocab = res;
         }
         else{
-            for(int i=num; i>=idx; i--){
-                vocab[i+1] = vocab[i];
+            if (num + 1 - idx >= 0){
+                System.arraycopy(vocab, idx, vocab, idx + 1, num + 1 - idx);
             }
         }
 
@@ -112,7 +109,7 @@ public class Vocabulary {
         return binarySearch(0, num -1, word);
     }
 
-    //adds words to an array
+    //adds words to the vocab
     private void addWord(String word){
         int idx = index(word);
         if(idx < length() && word.equals(vocab[idx])) return;
@@ -138,29 +135,52 @@ public class Vocabulary {
     }
 
     //returns statistics
-    public String Stats(){
-        String s = "Size of a collection: ";
-        double size=0;
+    public String statsTXT(){
+        StringBuilder s = new StringBuilder("Stats for vocabulary.txt: ");
 
-        for(int i=0; i<fileSizes.size(); i++){
-            size += fileSizes.get(i);
-            s += "\nFile " + (i+1) + ": " + fileNames.get(i) + " - " + fileSizes.get(i) + " kb";
-        }
+        s.append("\nNumber of words in vocabulary: ").append(num);
 
-        s += "\n\nTotal: " + size + " kb";
+        s.append("\nVocabulary size: ").append(vocabSize).append(" kb");
 
-        s += "\nNumber of words in a collection: " + numTotal;
-
-        s += "\nVocabulary size: " + vocabSize + " kb";
-
-        s += "\nNumber of words in a vocabulary: " + num;
-        return s;
+        return s.toString();
     }
 
+    public String listOfFiles() {
+        StringBuilder s = new StringBuilder("\nList of files: ");
+        double size = 0;
+        s.append("\nNumber of files: ").append(fileNames.size());
+
+        for(int i=0; i<fileSizes.size(); i++) {
+            size += fileSizes.get(i);
+            s.append("\nFile ").append(i + 1).append(": ").append(fileNames.get(i)).append(" - ").append(fileSizes.get(i)).append(" kb");
+        }
+        s.append("\n\nTotal number of words in all files: ").append(numTotal);
+        s.append("\nTotal : ").append(size).append(" kb");
+        return s.toString();
+    }
+
+    public String statsSer() {
+
+        File serFile = new File("vocabulary.ser");
+
+        if (!serFile.exists()) {
+            return "\nThe file vocabulary.ser does not exist.";
+        }
+
+        StringBuilder s = new StringBuilder("\nStats for vocab.ser: ");
+        double fileSize = serFile.length() / 1024.0; // Size in kilobytes
+        s.append("\nSize of serialized vocabulary.ser file: ").append(fileSize).append(" kb");
+        Vocabulary deserializedVocabulary = Vocabulary.deserialize("vocabulary.ser");
+        s.append("\nNumber of words in the deserialized vocabulary: ").append(deserializedVocabulary.number());
+        s.append("\nVocabulary size of the deserialized vocabulary: ").append(deserializedVocabulary.vocabSize).append(" kb\n");
+
+        return s.toString();
+}
+
+
     //returns elements of a created vocab
-    public void print (){
+    public void print(){
         OutputStream out = new BufferedOutputStream( System.out );
-        String res="";
         for(int i=0;i<num;i++){
             try {
                 out.write((vocab[i]+"\n").getBytes());
@@ -178,15 +198,60 @@ public class Vocabulary {
 
     //returns the path to the vocabulary.txt file on disc
     public String getVocabularyFilePath() {
-        File file = new File("vocabulary.txt");
-        return file.getAbsolutePath();
+    return vocabPathTXT;
     }
 
-    public String toString(){
-        String res = "";
-        for(int i = 0; i < num; i++){
-            res += vocab[i] + "\n";
-        }
-        return res;
+    //returns path to .ser TODO: MAKE A METHOD THAT DOES EVERY TYPE OF FILE W/O NAME
+    public String getFilePath() {
+
+    return new File ("vocabulary.ser").getAbsolutePath();
     }
-}
+
+    //will be needed later for the multifunctional path method
+   /* private static String getFileExtension(File file) {
+        String fileName = file.getName();
+        int lastDotIndex = fileName.lastIndexOf('.');
+
+        if (lastDotIndex != -1 && lastDotIndex < fileName.length() - 1) {
+            return fileName.substring(lastDotIndex + 1).toLowerCase();
+        }
+
+        return null;
+    }*/
+
+    public String toString(){
+        StringBuilder res = new StringBuilder();
+        for(int i = 0; i < num; i++){
+            res.append(vocab[i]).append("\n");
+        }
+        return res.toString();
+    }
+
+
+
+    //SERIALIZATION METHODS
+
+    // Serialize the vocabulary object to a file
+    public void serialize(String filename) {
+        try (ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(filename))) {
+            oos.writeObject(this);
+           // System.out.println("Vocabulary serialized successfully!");
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    // Deserialize the vocabulary object from a file
+    public static Vocabulary deserialize(String filename) {
+        try (ObjectInputStream ois = new ObjectInputStream(new FileInputStream(filename))) {
+            Object obj = ois.readObject();
+            if (obj instanceof Vocabulary) {
+              // System.out.println("Vocabulary deserialized successfully!");
+                return (Vocabulary) obj;
+            }
+        } catch (IOException | ClassNotFoundException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+  }
