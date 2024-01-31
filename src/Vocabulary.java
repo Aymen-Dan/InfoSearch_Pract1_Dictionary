@@ -9,7 +9,7 @@ public class Vocabulary implements Serializable {
     final double vocabSize;
     private final ArrayList<Double> fileSizes;
     private final ArrayList<String> fileNames;
-    private String vocabPathTXT;
+    private final String vocabPathTXT;
 
 
     //constructor
@@ -67,10 +67,10 @@ public class Vocabulary implements Serializable {
     private void addWords(String line){
         if(line.equals("")) return;
         String[] temp = line.split("[\\W]+");
-        for(int i = 0; i<temp.length; i++){
-            if(temp[i].matches("[a-zA-Z0-9_]+")) {
+        for (String s : temp) {
+            if (s.matches("[a-zA-Z0-9_]+")) {
                 numTotal++;
-                addWord(temp[i].toLowerCase());
+                addWord(s.toLowerCase());
             }
         }
     }
@@ -136,13 +136,9 @@ public class Vocabulary implements Serializable {
 
     //returns statistics
     public String statsTXT(){
-        StringBuilder s = new StringBuilder("Stats for vocabulary.txt: ");
 
-        s.append("\nNumber of words in vocabulary: ").append(num);
-
-        s.append("\nVocabulary size: ").append(vocabSize).append(" kb");
-
-        return s.toString();
+        return "Stats for vocabulary.txt: " + "\nNumber of words in vocabulary: " + num +
+                "\nVocabulary size: " + vocabSize + " kb";
     }
 
     public String listOfFiles() {
@@ -171,6 +167,7 @@ public class Vocabulary implements Serializable {
         double fileSize = serFile.length() / 1024.0; // Size in kilobytes
         s.append("\nSize of serialized vocabulary.ser file: ").append(fileSize).append(" kb");
         Vocabulary deserializedVocabulary = Vocabulary.deserialize("vocabulary.ser");
+        assert deserializedVocabulary != null;
         s.append("\nNumber of words in the deserialized vocabulary: ").append(deserializedVocabulary.number());
         s.append("\nVocabulary size of the deserialized vocabulary: ").append(deserializedVocabulary.vocabSize).append(" kb\n");
 

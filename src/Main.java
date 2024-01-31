@@ -39,8 +39,16 @@ public class Main {
         long elapsedTimeSER = endTimeSER - startTimeSER; //final time it took
 
 
-        System.out.println("\n0 - Print vocabulary.txt;\n1 - Print list of files;\n2 - Show stats;\n3 - Show time needed to form vocabulary\n4 - Show path to vocabulary files stored on disc;\n5 - Open vocabulary.txt file;\n-1 - " +
-                "Exit\n");
+        System.out.println("""
+
+                0 - Print vocabulary.txt;
+                1 - Print list of files;
+                2 - Show stats;
+                3 - Show time needed to form vocabulary
+                4 - Show path to vocabulary files stored on disc;
+                5 - Open vocabulary.txt file;
+                -1 - Exit
+                """);
         System.out.println("Your input here: ");
         int i = in.nextInt();
 
@@ -77,8 +85,16 @@ public class Main {
                 default:
                     System.out.println("Wrong format");
             }
-            System.out.println("\n0 - Print vocabulary.txt;\n1 - Print list of files;\n2 - Show stats;\n3 - Show time needed to form vocabulary;\n4 - Show path to vocabulary files stored on disc;\n5 - Open vocabulary.txt file;\n-1 - " +
-                    "Exit\n");
+            System.out.println("""
+
+                    0 - Print vocabulary.txt;
+                    1 - Print list of files;
+                    2 - Show stats;
+                    3 - Show time needed to form vocabulary;
+                    4 - Show path to vocabulary files stored on disc;
+                    5 - Open vocabulary.txt file;
+                    -1 - Exit
+                    """);
             System.out.println("Your input here: ");
             i = in.nextInt();
         }
